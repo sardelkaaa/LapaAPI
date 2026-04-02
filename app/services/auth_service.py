@@ -1,22 +1,22 @@
 from fastapi import HTTPException, status
-from app.core.database import supabase
+from app.core.database import get_supabase
 from app.db.repositories.users import UsersRepository
+from app.models.user import PasswordResetRequest
 
 
 class AuthService:
     @staticmethod
     def register(email: str, password: str, role: str, name: str | None = None):
-        if role not in ["volunteer", "curator"]:
+        if role not in ["volunteer", "curator", "organization"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid role",
             )
-
-        # 1. Регистрация в Supabase Auth
+        supabase_client = get_supabase()
         try:
             print("[REGISTER] START")
 
-            auth_response = supabase.auth.sign_up({
+            auth_response = supabase_client.auth.sign_up({
                 "email": email,
                 "password": password,
                 "options": {
@@ -43,7 +43,6 @@ class AuthService:
                 detail="Registration failed",
             )
 
-        # 2. Создание профиля в public.users
         try:
             existing_user = UsersRepository.get_user_by_id(user.id)
 
@@ -71,9 +70,9 @@ class AuthService:
 
     @staticmethod
     def login(email: str, password: str):
-        # 1. Логин через Supabase Auth
+        supabase_client = get_supabase()
         try:
-            auth_response = supabase.auth.sign_in_with_password({
+            auth_response = supabase_client.auth.sign_in_with_password({
                 "email": email,
                 "password": password,
             })
@@ -93,13 +92,7 @@ class AuthService:
                 detail="Invalid email or password",
             )
 
-        # 2. Проверяем, есть ли профиль в public.users
-        print("[LOGIN] auth user.id =", user.id)
-        print("[LOGIN] auth user.email =", user.email)
-
         db_user = UsersRepository.get_user_by_id(user.id)
-
-        print("[LOGIN] db_user =", db_user)
 
         if not db_user:
             raise HTTPException(
@@ -107,16 +100,14 @@ class AuthService:
                 detail="User profile not found",
             )
 
-        # 3. Проверяем подтверждение email
         email_confirmed = getattr(user, "email_confirmed_at", None) is not None
 
-        # 4. Синхронизируем is_active после подтверждения email
         if email_confirmed and not db_user["is_active"]:
             updated = UsersRepository.update_is_active(user.id, True)
             if updated:
                 db_user["is_active"] = True
             else:
-                db_user["is_active"] = True  # локально на случай пустого ответа
+                db_user["is_active"] = True
 
         return {
             "access_token": session.access_token,
@@ -124,3 +115,47 @@ class AuthService:
             "token_type": "bearer",
             "is_active": db_user["is_active"],
         }
+
+    @staticmethod
+    def sign_out():
+        supabase_client = get_supabase()
+        try:
+            supabase_client.auth.sign_out()
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Logout failed: {str(e)}",
+            )
+
+        return {"message": "Sign out successfully"}
+
+    # @staticmethod
+    # def request_password_reset(email: str):
+    #     supabase_client = get_supabase()
+    #     try:
+    #         response = supabase_client.auth.api.reset_password_for_email(
+    #             email=email,
+    #             redirect_to="https://your-frontend.com/reset-password"  # ссылка на фронтенд
+    #         )
+    #     except Exception as e:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+    #             detail=f"Password reset request failed: {str(e)}",
+    #         )
+    #     return {"message": "Password reset email sent if user exists"}
+    #
+    #
+    # @staticmethod
+    # def update_password(access_token: str, new_password: str):
+    #     supabase_client = get_supabase()
+    #     try:
+    #         supabase_client.auth.api.update_user(
+    #             jwt=access_token,
+    #             password=new_password
+    #         )
+    #     except Exception as e:
+    #         raise HTTPException(
+    #             status_code=status.HTTP_400_BAD_REQUEST,
+    #             detail=f"Password update failed: {str(e)}",
+    #         )
+    #     return {"message": "Password updated successfully"}

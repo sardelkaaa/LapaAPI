@@ -71,3 +71,27 @@ class UsersRepository:
         )
 
         return result.data[0] if result.data else None
+
+    @staticmethod
+    def update_user_profile(user_id: str, data: dict):
+        supabase_admin = get_supabase_admin()
+        result = (
+            supabase_admin.table("users")
+            .update(data)
+            .eq("id", user_id)
+            .execute()
+        )
+
+        return result.data[0] if result.data else None
+
+    @staticmethod
+    def delete_user_profile(user_id: str):
+        supabase_admin = get_supabase_admin()
+        result = (
+            supabase_admin.table("users")
+            .delete()
+            .eq("id", user_id)
+            .execute()
+        )
+
+        return result.data

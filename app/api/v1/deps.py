@@ -1,15 +1,16 @@
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from app.core.database import supabase_admin
+from app.core.database import get_supabase_admin
 from app.db.repositories.users import UsersRepository
 
 bearer_scheme = HTTPBearer()
 
 
 def get_current_user(
-        credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+    credentials: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     token = credentials.credentials
+    supabase_admin = get_supabase_admin()
 
     try:
         user_response = supabase_admin.auth.get_user(token)
@@ -30,7 +31,6 @@ def get_current_user(
             detail=f"Authentication failed: {str(e)}",
         )
 
-    # Get user profile from database
     user = UsersRepository.get_user_by_id(user_id)
     if not user:
         raise HTTPException(
@@ -39,3 +39,15 @@ def get_current_user(
         )
 
     return user
+
+
+def require_roles(*allowed_roles: str):
+    def role_checker(current_user=Depends(get_current_user)):
+        if current_user["role"] not in allowed_roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Insufficient permissions",
+            )
+        return current_user
+
+    return role_checker

@@ -1,39 +1,31 @@
-# Все настройки из переменных окружения
-"""
-Конфигурационный файл приложения.
-Загружает все настройки из переменных окружения.
-Использует Pydantic для валидации типов.
-"""
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
-from pydantic_settings import BaseSettings  # Новый пакет для настроек
-from typing import Optional
 
 class Settings(BaseSettings):
-    """
-    Класс настроек. Pydantic автоматически загрузит значения из .env.
-    """
+    APP_NAME: str = "LapaAPI"
+    DEBUG: bool = True
 
-    supabase_url: str
-    supabase_key: str
-    code_expiry_minutes: int = 2
-    supabase_service_key: Optional[str]
+    SECRET_KEY: str = "change-me-in-production"
 
-    # JWT настройки
-    secret_key: str = os.getenv('JWT_SECRET_KEY')
-    algorithm: str = "HS256"
-    access_token_expire_minutes: int = 30
-    refresh_token_expire_days: int = 7
+    SUPABASE_URL: str
+    SUPABASE_KEY: str
+    SUPABASE_SERVICE_KEY: str
+    SUPABASE_JWT_SECRET: str
 
-    # База данных
-    database_url: str = os.getenv('DATABASE_URL')
+    CODE_EXPIRY_MINUTES: int = 2
 
-    class Config:
-        """
-        Внутренний класс конфигурации Pydantic.
-        """
-        env_file = ".env"
-        env_file_encoding = "utf-8"
-        case_sensitive = False
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    DATABASE_URL: str
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        case_sensitive=False,
+        extra="ignore",
+    )
+
 
 settings = Settings()

@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 
-from app.core.database import supabase_admin
+from app.core.config import settings
+from app.db.repositories.users import UsersRepository
 from app.models.auth import RegisterRequest, RegisterResponse, LoginRequest, TokenResponse
 from app.models.user import UserOut
 from app.services.auth_service import AuthService
@@ -30,21 +31,3 @@ def login(payload: LoginRequest):
 @router.get("/me", response_model=UserOut)
 def me(current_user=Depends(get_current_user)):
     return current_user
-
-@router.get("/debug-login-check")
-def debug_login_check():
-    user_id = "740cba44-5371-4ea7-ae68-16fe7c32dc03"
-
-    result = (
-        supabase_admin.table("users")
-        .select("*")
-        .eq("id", user_id)
-        .execute()
-    )
-
-    return {
-        "raw_data": result.data,
-        "type": str(type(result.data)),
-        "len": len(result.data) if result.data else 0,
-        "first": result.data[0] if result.data else None
-    }

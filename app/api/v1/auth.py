@@ -30,9 +30,11 @@ def login(payload: LoginRequest):
 def sign_out():
     return AuthService.sign_out()
 
-@router.post("/refresh")
+@router.post("/refresh", response_model=TokenResponse)
 def refresh(payload: RefreshToken):
-    return AuthService.refresh_token(payload.refresh_token)
+    return AuthService.refresh_token(
+        refresh_token=payload.refresh_token
+    )
 
 
 # @router.post("/reset-password")

@@ -3,8 +3,28 @@ from app.core.config import settings
 from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
 from app.api.v1.admin import router as admin_router
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
-app = FastAPI(title=settings.APP_NAME, debug=settings.DEBUG)
+app = FastAPI(title=settings.APP_NAME,
+              description="API для волонтерского проекта",
+              debug=settings.DEBUG)
+
+origins = [
+    "http://localhost:3000"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.get("/", include_in_schema=False)
+def root():
+    return RedirectResponse(url="/docs")
 
 @app.get("/health", tags=["Health"])
 def health():
@@ -13,3 +33,4 @@ def health():
 app.include_router(auth_router)
 app.include_router(users_router)
 app.include_router(admin_router)
+

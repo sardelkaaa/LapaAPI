@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from app.core.database import get_supabase
+from app.core.database import get_supabase, supabase
 from app.db.repositories.users import UsersRepository
 from app.models.user import PasswordResetRequest
 
@@ -7,15 +7,13 @@ from app.models.user import PasswordResetRequest
 class AuthService:
     @staticmethod
     def register(email: str, password: str, role: str, name: str | None = None):
-        if role not in ["volunteer", "curator", "organization"]:
+        if role not in ["volunteer", "curator", "organization", "user"]:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Invalid role",
             )
         supabase_client = get_supabase()
         try:
-            print("[REGISTER] START")
-
             auth_response = supabase_client.auth.sign_up({
                 "email": email,
                 "password": password,
@@ -27,10 +25,7 @@ class AuthService:
                 }
             })
 
-            print("[REGISTER] AUTH RESPONSE:", auth_response)
-
         except Exception as e:
-            print("[REGISTER] SUPABASE SIGN_UP ERROR:", repr(e))
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Supabase sign_up failed: {str(e)}",
@@ -55,7 +50,6 @@ class AuthService:
                 )
 
         except Exception as e:
-            print("[REGISTER] CREATE USER PROFILE ERROR:", repr(e))
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"User profile creation failed: {str(e)}",
@@ -77,7 +71,6 @@ class AuthService:
                 "password": password,
             })
         except Exception as e:
-            print("[LOGIN] SUPABASE SIGN_IN ERROR:", repr(e))
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail=f"Login failed: {str(e)}",
@@ -128,6 +121,41 @@ class AuthService:
             )
 
         return {"message": "Sign out successfully"}
+
+    @staticmethod
+    def refresh_token(refresh_token: str):
+        supabase_client = get_supabase()
+        try:
+            session = supabase_client.auth.refresh_session(refresh_token)
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Invalid refresh token: {str(e)}",
+            )
+        if not session or not session.session:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail=f"Failed to refresh session",
+            )
+
+        new_access_token = session.session.access_token
+        new_refresh_token = session.session.refresh_token
+        user = session.user
+
+        db_user = UsersRepository.get_user_by_id(user.id)
+        if not db_user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User profile not found",
+            )
+
+        return {
+            "access_token": new_access_token,
+            "refresh_token": new_refresh_token,
+            "token_type": "bearer",
+            "is_active": db_user["is_active"],
+        }
+
 
     # @staticmethod
     # def request_password_reset(email: str):

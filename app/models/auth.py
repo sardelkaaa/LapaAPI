@@ -26,3 +26,6 @@ class TokenResponse(BaseModel):
     refresh_token: str
     token_type: str = "bearer"
     is_active: bool
+
+class RefreshToken(BaseModel):
+    refresh_token: str

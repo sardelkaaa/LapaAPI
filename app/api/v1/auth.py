@@ -2,7 +2,7 @@ from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from app.api.v1.deps import get_current_user
 from app.core.database import supabase, get_supabase
-from app.models.auth import RegisterRequest, RegisterResponse, LoginRequest, TokenResponse
+from app.models.auth import RegisterRequest, RegisterResponse, LoginRequest, TokenResponse, RefreshToken
 from app.models.user import PasswordResetRequest
 from app.services.auth_service import AuthService
 
@@ -29,6 +29,11 @@ def login(payload: LoginRequest):
 @router.post("/sign_out")
 def sign_out():
     return AuthService.sign_out()
+
+@router.post("/refresh")
+def refresh(payload: RefreshToken):
+    return AuthService.refresh_token(payload.refresh_token)
+
 
 # @router.post("/reset-password")
 # def request_reset_password(payload: PasswordResetRequest):

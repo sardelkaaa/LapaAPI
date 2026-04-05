@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status
-from app.core.database import get_supabase, supabase
+
+from app.core.database import get_supabase
 from app.db.repositories.users import UsersRepository
-from app.models.user import PasswordResetRequest
 
 
 class AuthService:

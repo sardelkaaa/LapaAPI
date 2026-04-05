@@ -5,7 +5,7 @@ from typing import Optional, Literal
 class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
-    role: Literal["volunteer", "curator"]
+    role: Literal["volunteer", "curator", "user", "organization"]
     name: Optional[str] = None
 
 

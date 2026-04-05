@@ -1,9 +1,6 @@
-from fastapi import APIRouter, HTTPException
-from fastapi.params import Depends
-from app.api.v1.deps import get_current_user
-from app.core.database import supabase, get_supabase
+from fastapi import APIRouter
+
 from app.models.auth import RegisterRequest, RegisterResponse, LoginRequest, TokenResponse, RefreshToken
-from app.models.user import PasswordResetRequest
 from app.services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["Auth"])

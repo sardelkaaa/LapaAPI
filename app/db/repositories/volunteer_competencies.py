@@ -140,6 +140,8 @@ class VolunteerCompetenciesRepository:
                     "is_working": day.get("is_working", True)
                 })
 
+            supabase.table("volunteer_schedules").insert(records).execute()
+
         return VolunteerCompetenciesRepository.get_schedule(user_id)
 
     @staticmethod

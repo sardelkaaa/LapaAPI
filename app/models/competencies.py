@@ -3,6 +3,9 @@ from typing import Optional, List
 from datetime import time
 from enum import Enum
 
+from app.models.animal import AnimalTypeOut
+
+
 class SkillOut(BaseModel):
     """Навык волонтёра"""
     id: str = Field(..., description="UUID навыка")
@@ -21,15 +24,6 @@ class PreferenceOut(BaseModel):
         json_schema_extra = {"example": {"id": "uuid", "name": "Помощь приютам"}}
 
 
-class AnimalTypeOut(BaseModel):
-    """Тип животного"""
-    id: int = Field(..., ge=1, description="ID типа животного")
-    name: str = Field(..., description="Название")
-
-    class Config:
-        json_schema_extra = {"example": {"id": 1, "name": "Собаки"}}
-
-
 class InteractionType(str, Enum):
     """Тип взаимодействия"""
     SHELTER = "shelter"
@@ -38,27 +32,20 @@ class InteractionType(str, Enum):
 
 class DaySchedule(BaseModel):
     """Расписание на один день недели"""
-    day_of_week: int = Field(..., ge=0, le=6, description="0-пн, 1-вт, 2-ср, 3-чт, 4-пт, 5-сб, 6-вс")
-    start_time: time = Field(..., description="Время начала", examples=["09:00:00"])
-    end_time: time = Field(..., description="Время окончания", examples=["18:00:00"])
-    is_working: bool = Field(True, description="Рабочий день")
+    day_of_week: int = Field(..., ge=0, le=6, description="0-пн, 1-вт, 2-ср, 3-чт, 4-пт, 5-сб, 6-вс", example=0)
+    start_time: time = Field(..., description="Время начала", example="09:00:00")
+    end_time: time = Field(..., description="Время окончания", example="18:00:00")
+    is_working: bool = Field(True, description="Рабочий день", example=True)
 
-
-class WeeklySchedule(BaseModel):
-    """Еженедельное расписание (все дни)"""
-    monday: Optional[DaySchedule] = None
-    tuesday: Optional[DaySchedule] = None
-    wednesday: Optional[DaySchedule] = None
-    thursday: Optional[DaySchedule] = None
-    friday: Optional[DaySchedule] = None
-    saturday: Optional[DaySchedule] = None
-    sunday: Optional[DaySchedule] = None
-
-
-class SimpleSchedule(BaseModel):
-    """Простое расписание (список дней)"""
-    days: List[DaySchedule] = Field(default=[], description="Список дней с расписанием")
-
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "day_of_week": 0,
+                "start_time": "09:00:00",
+                "end_time": "18:00:00",
+                "is_working": True
+            }
+        }
 
 class VolunteerAvailability(BaseModel):
     """Доступность волонтёра"""
@@ -103,19 +90,71 @@ class VolunteerCompetenciesResponse(BaseModel):
         }
 
 class UpdateVolunteerSkillsRequest(BaseModel):
-    skill_ids: List[str] = Field(..., description="Список ID навыков")
+    """Обновление навыков волонтёра"""
+    skill_ids: List[str] = Field(..., description="Список ID навыков", example=["uuid1", "uuid2", "uuid3"])
 
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "skill_ids": [
+                    "550e8400-e29b-41d4-a716-446655440000",
+                    "660e8400-e29b-41d4-a716-446655440001",
+                    "770e8400-e29b-41d4-a716-446655440002"
+                ]
+            }
+        }
 
 class UpdateVolunteerPreferencesRequest(BaseModel):
-    preference_ids: List[str] = Field(..., description="Список ID предпочтений")
+    """Обновление предпочтений волонтёра"""
+    preference_ids: List[str] = Field(..., description="Список ID предпочтений", example=["uuid1", "uuid2"])
 
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "preference_ids": [
+                    "550e8400-e29b-41d4-a716-446655440000",
+                    "660e8400-e29b-41d4-a716-446655440001"
+                ]
+            }
+        }
 
 class UpdateVolunteerAnimalPreferencesRequest(BaseModel):
-    animal_type_ids: List[int] = Field(..., description="Список ID типов животных")
+    """Обновление предпочтений животных"""
+    animal_type_ids: List[int] = Field(..., description="Список ID типов животных", example=[1, 2, 3])
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "animal_type_ids": [1, 2, 3]
+            }
+        }
 
 class UpdateVolunteerInteractionPreferencesRequest(BaseModel):
-    interaction_types: List[InteractionType] = Field(..., description="Типы взаимодействия")
+    """Обновление предпочтений взаимодействий"""
+    interaction_types: List[InteractionType] = Field(..., description="Типы взаимодействия", example=["shelter", "foster"])
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "interaction_types": ["shelter", "foster", "street"]
+            }
+        }
 
 class UpdateScheduleRequest(BaseModel):
     """Обновление расписания (полная замена)"""
     schedule: List[DaySchedule] = Field(..., description="Новое расписание")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "schedule": [
+                    {"day_of_week": 0, "start_time": "09:00:00", "end_time": "18:00:00", "is_working": True},
+                    {"day_of_week": 1, "start_time": "09:00:00", "end_time": "18:00:00", "is_working": True},
+                    {"day_of_week": 2, "start_time": "09:00:00", "end_time": "18:00:00", "is_working": False},
+                    {"day_of_week": 3, "start_time": "09:00:00", "end_time": "18:00:00", "is_working": True},
+                    {"day_of_week": 4, "start_time": "09:00:00", "end_time": "18:00:00", "is_working": True},
+                    {"day_of_week": 5, "start_time": "10:00:00", "end_time": "15:00:00", "is_working": True},
+                    {"day_of_week": 6, "start_time": "12:00:00", "end_time": "16:00:00", "is_working": True}
+                ]
+            }
+        }

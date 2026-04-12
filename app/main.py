@@ -4,6 +4,7 @@ from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
 from app.api.v1.admin import router as admin_router
 from app.api.v1.volunteer import router as volunteer_router
+from app.api.v1.tasks import router as tasks_router
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from app.api.v1.animals import router as animals_router
@@ -38,3 +39,4 @@ app.include_router(users_router)
 app.include_router(admin_router)
 app.include_router(volunteer_router)
 app.include_router(animals_router)
+app.include_router(tasks_router)

@@ -81,4 +81,4 @@ async def upload_animal_photo(
     current_user=Depends(get_current_user),
 ):
     """Изменить фото животного"""
-    return await AnimalService.upload_animal_photo(animal_id, current_user["id"], file)
+    return await AnimalService.upload_animal_photo(animal_id, current_user, file)

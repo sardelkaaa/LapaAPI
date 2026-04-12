@@ -42,10 +42,18 @@ class AnimalUpdate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "name": "Бимка",
-                "age": 4,
-                "description": "Очень ласковый и спокойный",
-                "is_active": False,
+              "age": 3,
+              "created_at": "2024-01-15T10:30:00Z",
+              "curator_id": "volunteer-uuid-12345",
+              "description": "Дружелюбный пёс, ищет дом",
+              "id": "550e8400-e29b-41d4-a716-446655440000",
+              "is_active": True,
+              "location_lat": 55.7558,
+              "location_lng": 37.6176,
+              "location_text": "Москва, ул. Ленина 5",
+              "name": "Бим",
+              "photo_url": "https://example.com/photos/dog_bim.jpg",
+              "type_id": 1,
             }
         }
 
@@ -67,8 +75,6 @@ class AnimalOut(BaseModel):
     description: Optional[str] = Field(None, example="Дружелюбный пёс, ищет дом")
 
     type_id: int = Field(..., example=1)
-    type_name: Optional[str] = Field(None, example="Собаки")
-
     curator_id: str = Field(..., example="volunteer-uuid-12345")
 
     location_text: str = Field(..., example="Москва, ул. Ленина 5")
@@ -90,7 +96,6 @@ class AnimalOut(BaseModel):
                 "age": 3,
                 "description": "Дружелюбный пёс, ищет дом",
                 "type_id": 1,
-                "type_name": "Собаки",
                 "curator_id": "volunteer-uuid-12345",
                 "location_text": "Москва, ул. Ленина 5",
                 "location_lat": 55.7558,
@@ -118,7 +123,6 @@ class AnimalListResponse(BaseModel):
                         "age": 3,
                         "description": "Дружелюбный пёс",
                         "type_id": 1,
-                        "type_name": "Собаки",
                         "curator_id": "volunteer-uuid-12345",
                         "location_text": "Москва, ул. Ленина 5",
                         "location_lat": 55.7558,
@@ -134,7 +138,6 @@ class AnimalListResponse(BaseModel):
                         "age": 2,
                         "description": "Ласковая кошка",
                         "type_id": 2,
-                        "type_name": "Кошки",
                         "curator_id": "volunteer-uuid-67890",
                         "location_text": "Москва, ул. Лермонтова 3",
                         "location_lat": 55.7560,
@@ -180,7 +183,6 @@ class AnimalPhotoUploadResponse(BaseModel):
                     "age": 3,
                     "description": "Дружелюбный пёс, ищет дом",
                     "type_id": 1,
-                    "type_name": "Собаки",
                     "curator_id": "volunteer-uuid-12345",
                     "location_text": "Москва, ул. Ленина 5",
                     "location_lat": 55.7558,

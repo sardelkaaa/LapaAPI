@@ -1,14 +1,27 @@
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
-from app.core.database import get_supabase
+from app.core.database import get_supabase_admin, get_supabase
 
 
 class AnimalsRepository:
     @staticmethod
     def create_animal(data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        supabase_client = get_supabase()
+        supabase_client = get_supabase_admin()
         result = supabase_client.table("animals").insert(data).execute()
+        if not result.data:
+            return None
+        return result.data[0]
+
+    @staticmethod
+    def get_animal_type_by_id(type_id: int) -> Optional[str]:
+        supabase_client = get_supabase()
+        result = (supabase_client
+                  .table("animals_type")
+                  .select("name")
+                  .eq("id", type_id)
+                  .execute())
+
         if not result.data:
             return None
         return result.data[0]
@@ -70,7 +83,7 @@ class AnimalsRepository:
 
     @staticmethod
     def update_animal(animal_id: str, data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        supabase_client = get_supabase()
+        supabase_client = get_supabase_admin()
         result = (
             supabase_client.table("animals")
             .update(data)
@@ -85,7 +98,7 @@ class AnimalsRepository:
 
     @staticmethod
     def soft_delete_animal(animal_id: str) -> Optional[Dict[str, Any]]:
-        supabase_client = get_supabase()
+        supabase_client = get_supabase_admin()
         result = (
             supabase_client.table("animals")
             .update({

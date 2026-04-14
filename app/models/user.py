@@ -1,6 +1,6 @@
 from enum import Enum
 from pydantic import BaseModel, EmailStr, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 
 
@@ -88,3 +88,9 @@ class UserUpdateRequests(BaseModel):
 #
 #     access_token: str
 #     new_password: str
+
+class OrganizationListResponse(BaseModel):
+    """Список организаций с пагинацией"""
+    items: List[UserOut] = Field(..., description="Список организаций")
+    total: int = Field(..., description="Общее количество")
+    next_offset: Optional[int] = Field(None, description="Следующий offset")

@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, UploadFile, File
+from typing import Optional, List
+from fastapi import APIRouter, Depends, UploadFile, File, Query
 from app.api.v1.deps import get_current_user
-from app.models.user import UserOut, UserUpdateRequests
+from app.models.user import UserOut, UserUpdateRequests, OrganizationListResponse
 from app.services.user_service import UserService
 
 router = APIRouter(prefix="/users", tags=["Users"])
@@ -30,3 +31,13 @@ async def upload_avatar(
     current_user=Depends(get_current_user),
 ):
     return await UserService.upload_avatar(current_user["id"], file)
+
+@router.get("", response_model=OrganizationListResponse)
+def get_organizations(
+    limit: int = Query(20, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    search: Optional[str] = None,
+    current_user=Depends(get_current_user)  # любой авторизованный
+):
+    """Получить список всех организаций"""
+    return UserService.get_organizations(limit, offset, search)

@@ -1,5 +1,7 @@
+from typing import Optional, Dict, Any
+
 from fastapi import HTTPException, UploadFile, status
-from app.core.database import get_supabase_admin
+from app.core.database import get_supabase_admin, supabase
 from app.db.repositories.users import UsersRepository
 import uuid
 from app.core.config import settings
@@ -100,3 +102,23 @@ class UserService:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail=f"Avatar upload failed: {str(e)}",
             )
+
+    @staticmethod
+    def get_organizations(limit: int, offset: int, search: Optional[str] = None) -> Dict[str, Any]:
+        """Получить список организаций с пагинацией"""
+        supabase = get_supabase_admin()
+
+        query = supabase.table("users").select("*", count="exact").eq("role", "organization")
+
+        if search:
+            query = query.ilike("name", f"%{search}%")
+
+        query = query.range(offset, offset + limit - 1).order("created_at", desc=True)
+
+        result = query.execute()
+
+        return {
+            "items": result.data or [],
+            "total": result.count or 0,
+            "next_offset": offset + limit if offset + limit < (result.count or 0) else None
+        }

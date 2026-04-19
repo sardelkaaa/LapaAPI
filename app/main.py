@@ -9,6 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from app.api.v1.animals import router as animals_router
 from app.api.v1.calendar import router as calendar_router
+from app.api.v1.reviews import router as reviews_router
+
 
 app = FastAPI(title=settings.APP_NAME,
               description="API для волонтерского проекта",
@@ -41,3 +43,4 @@ app.include_router(volunteer_router)
 app.include_router(animals_router)
 app.include_router(tasks_router)
 app.include_router(calendar_router)
+app.include_router(reviews_router)

@@ -1,5 +1,5 @@
 from typing import Dict, Any, List, Optional
-from app.core.database import get_supabase, get_supabase_admin
+from app.core.database import get_supabase_admin
 from datetime import datetime, timezone
 
 class TasksRepository:
@@ -11,7 +11,7 @@ class TasksRepository:
 
     @staticmethod
     def get_task_by_id(task_id: str) -> Optional[Dict[str, Any]]:
-        supabase = get_supabase()
+        supabase = get_supabase_admin()
         result = supabase.table("tasks").select("*").eq("id", task_id).limit(1).execute()
         return result.data[0] if result.data else None
 
@@ -42,7 +42,7 @@ class TasksRepository:
         limit: int = 20,
         offset: int = 0
     ) -> List[Dict[str, Any]]:
-        supabase = get_supabase()
+        supabase = get_supabase_admin()
         query = supabase.table("tasks").select("*", count="exact")
         if "status" in filters:
             query = query.eq("status", filters["status"])
@@ -76,7 +76,7 @@ class TasksRepository:
 
     @staticmethod
     def get_required_skills(task_id: str) -> List[Dict[str, Any]]:
-        supabase = get_supabase()
+        supabase = get_supabase_admin()
         result = supabase.table("task_required_skills").select("skill_id, skills(*)").eq("task_id", task_id).execute()
         return [item["skills"] for item in result.data if item.get("skills")] if result.data else []
 
@@ -95,6 +95,6 @@ class TasksRepository:
 
     @staticmethod
     def get_status_history(task_id: str) -> List[Dict[str, Any]]:
-        supabase = get_supabase()
+        supabase = get_supabase_admin()
         result = supabase.table("task_status_history").select("*").eq("task_id", task_id).order("changed_at").execute()
         return result.data or []

@@ -1,9 +1,8 @@
-from typing import Dict, Any, List, Optional
-from fastapi import HTTPException, status
+from typing import Dict, Any
+from fastapi import HTTPException
 from app.db.repositories.tasks import TasksRepository
 from app.db.repositories.animals import AnimalsRepository
 from app.db.repositories.volunteer_competencies import VolunteerCompetenciesRepository
-from app.db.repositories.users import UsersRepository
 from datetime import datetime, timezone
 import uuid
 from math import radians, sin, cos, sqrt, atan2

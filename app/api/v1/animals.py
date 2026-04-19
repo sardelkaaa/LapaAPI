@@ -21,6 +21,7 @@ def create_animal(
     payload: AnimalCreate,
     current_user: dict = Depends(get_current_user),
 ):
+    """Создать животное. Может только организация, куратор и админ"""
     return AnimalService.create_animal(
         current_user=current_user,
         payload=payload.model_dump(exclude_none=True),
@@ -31,6 +32,7 @@ def create_animal(
 def get_my_animals(
     current_user: dict = Depends(get_current_user),
 ):
+    """Получить список животных текущего пользователя"""
     return AnimalService.list_my_animals(current_user)
 
 @router.get("", response_model=AnimalListResponse)
@@ -39,6 +41,7 @@ def list_animals(
     curator_id: Optional[str] = None,
     is_active: Optional[bool] = True,
 ):
+    """Получить список всех животных"""
     return AnimalService.list_animals(
         type_id=type_id,
         curator_id=curator_id,
@@ -48,6 +51,7 @@ def list_animals(
 
 @router.get("/{animal_id}", response_model=AnimalOut)
 def get_animal(animal_id: str):
+    """Получить животное по id"""
     return AnimalService.get_animal(animal_id)
 
 
@@ -57,6 +61,7 @@ def update_animal(
     payload: AnimalUpdate,
     current_user: dict = Depends(get_current_user),
 ):
+    """Обновить данные у животного"""
     return AnimalService.update_animal(
         current_user=current_user,
         animal_id=animal_id,
@@ -69,6 +74,7 @@ def delete_animal(
     animal_id: str,
     current_user: dict = Depends(get_current_user),
 ):
+    """Удалить животное"""
     return AnimalService.delete_animal(
         current_user=current_user,
         animal_id=animal_id,

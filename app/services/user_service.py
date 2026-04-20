@@ -122,3 +122,23 @@ class UserService:
             "total": result.count or 0,
             "next_offset": offset + limit if offset + limit < (result.count or 0) else None
         }
+
+    @staticmethod
+    def get_user_by_id(user_id: str, current_user: dict):
+        if current_user["id"] == user_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Use /users/me to get your own profile",
+            )
+
+        user = UsersRepository.get_user_by_id(user_id)
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        sensitive_fields = {"is_active"}
+        filtered_user = {k: v for k, v in user.items() if k not in sensitive_fields}
+        return filtered_user

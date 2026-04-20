@@ -32,6 +32,14 @@ async def upload_avatar(
 ):
     return await UserService.upload_avatar(current_user["id"], file)
 
+@router.get("/{user_id}", response_model=UserOut)
+def get_user_by_id(
+    user_id: str,
+    current_user=Depends(get_current_user),
+):
+    """Получить профиль пользователя по ID (для просмотра другими пользователями)"""
+    return UserService.get_user_by_id(user_id, current_user)
+
 @router.get("", response_model=OrganizationListResponse)
 def get_organizations(
     limit: int = Query(20, ge=1, le=100),

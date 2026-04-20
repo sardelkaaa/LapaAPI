@@ -139,6 +139,4 @@ class UserService:
                 detail="User not found",
             )
 
-        sensitive_fields = {"is_active"}
-        filtered_user = {k: v for k, v in user.items() if k not in sensitive_fields}
-        return filtered_user
+        return user

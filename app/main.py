@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket, Query
 from app.core.config import settings
 from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
@@ -10,7 +10,8 @@ from fastapi.responses import RedirectResponse
 from app.api.v1.animals import router as animals_router
 from app.api.v1.calendar import router as calendar_router
 from app.api.v1.reviews import router as reviews_router
-
+from app.api.v1.websocket import websocket_endpoint
+from app.api.v1.chats import router as chats_router
 
 app = FastAPI(title=settings.APP_NAME,
               description="API для волонтерского проекта",
@@ -44,3 +45,6 @@ app.include_router(animals_router)
 app.include_router(tasks_router)
 app.include_router(calendar_router)
 app.include_router(reviews_router)
+
+app.include_router(chats_router, prefix="/api/v1")
+app.add_api_websocket_route("/ws", websocket_endpoint)

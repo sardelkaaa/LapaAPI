@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     SUPABASE_JWT_SECRET: str
     AVATAR_BUCKET: str
     ANIMAL_PHOTOS_BUCKET: str
+    ARTICLE_IMAGES_BUCKET: str
 
     CODE_EXPIRY_MINUTES: int = 2
 

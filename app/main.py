@@ -12,6 +12,7 @@ from app.api.v1.calendar import router as calendar_router
 from app.api.v1.reviews import router as reviews_router
 from app.api.v1.websocket import websocket_endpoint
 from app.api.v1.chats import router as chats_router
+from app.api.v1.articles import router as articles_router
 
 app = FastAPI(title=settings.APP_NAME,
               description="API для волонтерского проекта",
@@ -45,6 +46,7 @@ app.include_router(animals_router)
 app.include_router(tasks_router)
 app.include_router(calendar_router)
 app.include_router(reviews_router)
+app.include_router(articles_router)
 
 app.include_router(chats_router, prefix="/api/v1")
 app.add_api_websocket_route("/ws", websocket_endpoint)

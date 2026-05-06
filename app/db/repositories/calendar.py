@@ -29,12 +29,13 @@ class CalendarRepository:
         """Получить события пользователя с фильтрацией по дате"""
         supabase = get_supabase_admin()
 
-        query = supabase.table("calendar_events").select("*", count="exact").eq("created_by", user_id)
+        query = supabase.table("calendar_events").select("*").eq("created_by", user_id)
 
         if start_date:
             query = query.gte("event_date", start_date.isoformat())
         if end_date:
-            query = query.lte("event_date", end_date.isoformat())
+            # Используем lt (меньше) чтобы не включать следующий месяц
+            query = query.lt("event_date", end_date.isoformat())
 
         result = query.order("event_date").order("start_time").range(offset, offset + limit - 1).execute()
 

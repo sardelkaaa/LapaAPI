@@ -232,27 +232,44 @@ class CalendarService:
     @staticmethod
     def get_events_by_month(user_id: str, year: int, month: int) -> Dict[str, Any]:
         """Получить события за конкретный месяц"""
-        start_date = date(year, month, 1)
+        try:
+            start_date = date(year, month, 1)
 
-        # Определяем последний день месяца
-        if month == 12:
-            end_date = date(year + 1, 1, 1)
-        else:
-            end_date = date(year, month + 1, 1)
+            # Определяем последний день месяца
+            if month == 12:
+                end_date = date(year + 1, 1, 1)
+            else:
+                end_date = date(year, month + 1, 1)
 
-        events = CalendarRepository.get_user_events(user_id, start_date, end_date, limit=1000, offset=0)
+            events = CalendarRepository.get_user_events(user_id, start_date, end_date, limit=1000, offset=0)
 
-        # Группируем события по дням
-        events_by_day = {}
-        for event in events:
-            event_date = event["event_date"]
-            if event_date not in events_by_day:
-                events_by_day[event_date] = []
-            events_by_day[event_date].append(CalendarService._enrich_event(event))
+            # Группируем события по дням
+            events_by_day = {}
+            for event in events:
+                event_date = event.get("event_date")
+                if event_date is None:
+                    continue
 
-        return {
-            "year": year,
-            "month": month,
-            "events": events_by_day,
-            "total": len(events)
-        }
+                # Преобразуем дату в строку
+                if hasattr(event_date, "isoformat"):
+                    date_key = event_date.isoformat()
+                else:
+                    date_key = str(event_date)
+
+                if date_key not in events_by_day:
+                    events_by_day[date_key] = []
+
+                events_by_day[date_key].append(CalendarService._enrich_event(event))
+
+            return {
+                "year": year,
+                "month": month,
+                "events": events_by_day,
+                "total": len(events)
+            }
+        except Exception as e:
+            print(f"[ERROR] get_events_by_month: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to get calendar events: {str(e)}"
+            )

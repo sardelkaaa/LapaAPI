@@ -88,16 +88,15 @@ class CalendarService:
         return CalendarService._enrich_event(event)
 
     @staticmethod
-    def get_user_events(
-            user_id: str,
+    def get_events(
             start_date: Optional[date] = None,
             end_date: Optional[date] = None,
             limit: int = 50,
             offset: int = 0
     ) -> Dict[str, Any]:
         """Получить события пользователя с пагинацией"""
-        events = CalendarRepository.get_user_events(user_id, start_date, end_date, limit, offset)
-        total = CalendarRepository.get_total_count(user_id, start_date, end_date)
+        events = CalendarRepository.get_events(start_date, end_date, limit, offset)
+        total = CalendarRepository.get_total_count(start_date, end_date)
 
         enriched_events = [CalendarService._enrich_event(event) for event in events]
 
@@ -230,7 +229,7 @@ class CalendarService:
         return CalendarService._enrich_event(event)
 
     @staticmethod
-    def get_events_by_month(user_id: str, year: int, month: int) -> Dict[str, Any]:
+    def get_events_by_month(year: int, month: int) -> Dict[str, Any]:
         """Получить события за конкретный месяц"""
         try:
             start_date = date(year, month, 1)
@@ -241,7 +240,7 @@ class CalendarService:
             else:
                 end_date = date(year, month + 1, 1)
 
-            events = CalendarRepository.get_user_events(user_id, start_date, end_date, limit=1000, offset=0)
+            events = CalendarRepository.get_events(start_date, end_date, limit=1000, offset=0)
 
             # Группируем события по дням
             events_by_day = {}

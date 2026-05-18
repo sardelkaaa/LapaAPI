@@ -31,13 +31,11 @@ def get_events(
         end_date: Optional[date] = Query(None, description="Конечная дата (YYYY-MM-DD)"),
         limit: int = Query(50, ge=1, le=200, description="Количество событий на странице"),
         offset: int = Query(0, ge=0, description="Смещение для пагинации"),
-        current_user=Depends(get_current_user)
 ):
     """
-    Получить список событий пользователя
+    Получить список событий
     """
-    return CalendarService.get_user_events(
-        current_user["id"],
+    return CalendarService.get_events(
         start_date,
         end_date,
         limit,
@@ -54,7 +52,7 @@ def get_events_by_month(
     """
     Получить события за конкретный месяц (группировка по дням)
     """
-    return CalendarService.get_events_by_month(current_user["id"], year, month)
+    return CalendarService.get_events_by_month(year, month)
 
 
 @router.get("/events/{event_id}", response_model=CalendarEventOut)

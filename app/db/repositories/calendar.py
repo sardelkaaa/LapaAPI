@@ -19,17 +19,16 @@ class CalendarRepository:
         return result.data[0] if result.data else None
 
     @staticmethod
-    def get_user_events(
-            user_id: str,
+    def get_events(
             start_date: Optional[date] = None,
             end_date: Optional[date] = None,
             limit: int = 100,
             offset: int = 0
     ) -> List[Dict[str, Any]]:
-        """Получить события пользователя с фильтрацией по дате"""
+        """Получить события с фильтрацией по дате"""
         supabase = get_supabase_admin()
 
-        query = supabase.table("calendar_events").select("*").eq("created_by", user_id)
+        query = supabase.table("calendar_events").select("*")
 
         if start_date:
             query = query.gte("event_date", start_date.isoformat())
@@ -42,11 +41,11 @@ class CalendarRepository:
         return result.data or []
 
     @staticmethod
-    def get_total_count(user_id: str, start_date: Optional[date] = None, end_date: Optional[date] = None) -> int:
-        """Получить общее количество событий пользователя"""
+    def get_total_count(start_date: Optional[date] = None, end_date: Optional[date] = None) -> int:
+        """Получить общее количество событий"""
         supabase = get_supabase_admin()
 
-        query = supabase.table("calendar_events").select("*", count="exact").eq("created_by", user_id)
+        query = supabase.table("calendar_events").select("*", count="exact")
 
         if start_date:
             query = query.gte("event_date", start_date.isoformat())

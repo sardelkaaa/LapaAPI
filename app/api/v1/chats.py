@@ -1,76 +1,87 @@
-from typing import Optional
+from fastapi import APIRouter, Depends, HTTPException, status
+from typing import List
 from uuid import UUID
-from fastapi import APIRouter, Depends, Query, HTTPException, status
 from app.api.v1.deps import get_current_user
-from app.models.chat import (
-    Chat, ChatListResponse, ChatMessagesResponse,
-    CreateChatRequest, CreateMessageRequest
-)
 from app.services.chat_http_service import ChatHTTPService
+from app.models.chat import Chat, ChatListResponse, ChatMessagesResponse, CreateChatRequest, CreateMessageRequest, \
+    ChatMessage
 
 router = APIRouter(prefix="/chats", tags=["Chats"])
 
 @router.get("", response_model=ChatListResponse)
-def get_user_chats(
-    limit: int = Query(50, ge=1, le=100),
-    offset: int = Query(0, ge=0),
-    current_user: dict = Depends(get_current_user)
+async def get_user_chats(
+    limit: int = 50,
+    offset: int = 0,
+    current_user = Depends(get_current_user)
 ):
     """Получить все чаты текущего пользователя"""
     return ChatHTTPService.get_user_chats(
-        user_id=current_user['id'],
-        limit=limit,
-        offset=offset
+        UUID(current_user["id"]),
+        limit,
+        offset
     )
 
-@router.get("/{chat_id}", response_model=Chat)
-def get_chat(
-    chat_id: UUID,
-    current_user: dict = Depends(get_current_user)
+@router.post("", response_model=Chat)
+async def create_chat(
+    data: CreateChatRequest,
+    current_user = Depends(get_current_user)
 ):
-    """Получить детали чата по ID"""
-    chat = ChatHTTPService.get_chat(chat_id, current_user['id'])
+    """Создать или получить существующий чат с пользователем"""
+    chat = ChatHTTPService.create_chat(
+        UUID(current_user["id"]),
+        data.user_id
+    )
+    if not chat:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    return chat
+
+@router.get("/{chat_id}", response_model=Chat)
+async def get_chat(
+    chat_id: str,
+    current_user = Depends(get_current_user)
+):
+    """Получить детали чата"""
+    chat = ChatHTTPService.get_chat(UUID(chat_id), UUID(current_user["id"]))
     if not chat:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Chat not found"
-        )
-    return chat
-
-@router.post("", response_model=Chat)
-def create_chat(
-    data: CreateChatRequest,
-    current_user: dict = Depends(get_current_user)
-):
-    """Создать новый чат с пользователем"""
-    chat = ChatHTTPService.create_chat(current_user['id'], data.user_id)
-    if not chat:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot create chat with yourself"
         )
     return chat
 
 @router.get("/{chat_id}/messages", response_model=ChatMessagesResponse)
-def get_chat_messages(
-    chat_id: UUID,
-    limit: int = Query(50, ge=1, le=100),
-    offset: int = Query(0, ge=0),
-    current_user: dict = Depends(get_current_user)
+async def get_chat_messages(
+    chat_id: str,
+    limit: int = 50,
+    offset: int = 0,
+    current_user = Depends(get_current_user)
 ):
     """Получить сообщения чата"""
-    return ChatHTTPService.get_messages(chat_id, current_user['id'], limit, offset)
+    return ChatHTTPService.get_messages(
+        UUID(chat_id),
+        UUID(current_user["id"]),
+        limit,
+        offset
+    )
 
-@router.delete("/{chat_id}")
-def delete_chat(
-    chat_id: UUID,
-    current_user: dict = Depends(get_current_user)
+@router.post("/{chat_id}/messages", response_model=ChatMessage)
+async def send_message(
+    chat_id: str,
+    data: CreateMessageRequest,
+    current_user = Depends(get_current_user)
 ):
-    """Удалить чат"""
-    success = ChatHTTPService.delete_chat(chat_id, current_user['id'])
-    if not success:
+    """Отправить сообщение в чат (через HTTP)"""
+    message = ChatHTTPService.send_message(
+        UUID(chat_id),
+        UUID(current_user["id"]),
+        data.content
+    )
+    if not message:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Chat not found"
         )
-    return {"message": "Chat deleted successfully"}
+    return message

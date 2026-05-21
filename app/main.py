@@ -1,4 +1,4 @@
-from fastapi import FastAPI, WebSocket, Query
+from fastapi import FastAPI
 from app.core.config import settings
 from app.api.v1.auth import router as auth_router
 from app.api.v1.users import router as users_router
@@ -13,13 +13,15 @@ from app.api.v1.reviews import router as reviews_router
 from app.api.v1.websocket import websocket_endpoint
 from app.api.v1.chats import router as chats_router
 from app.api.v1.articles import router as articles_router
+from app.socketio_server import socket_app
 
 app = FastAPI(title=settings.APP_NAME,
               description="API для волонтерского проекта",
               debug=settings.DEBUG)
 
 origins = [
-    "http://localhost:3000"
+    "http://localhost:3000",
+    "https://lapa-api-delderol.amvera.io",
 ]
 
 app.add_middleware(
@@ -29,6 +31,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/socket.io", socket_app)
 
 @app.get("/", include_in_schema=False)
 def root():

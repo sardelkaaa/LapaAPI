@@ -52,4 +52,3 @@ app.include_router(reviews_router)
 app.include_router(articles_router)
 
 app.include_router(chats_router, prefix="/api/v1")
-app.add_api_websocket_route("/ws", websocket_endpoint)

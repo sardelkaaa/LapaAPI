@@ -10,7 +10,6 @@ from fastapi.responses import RedirectResponse
 from app.api.v1.animals import router as animals_router
 from app.api.v1.calendar import router as calendar_router
 from app.api.v1.reviews import router as reviews_router
-from app.api.v1.websocket import websocket_endpoint
 from app.api.v1.chats import router as chats_router
 from app.api.v1.articles import router as articles_router
 from app.socketio_server import socket_app

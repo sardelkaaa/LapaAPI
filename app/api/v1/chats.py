@@ -85,22 +85,3 @@ async def send_message(
             detail="Chat not found"
         )
     return message
-
-@router.post("/{chat_id}/messages", response_model=ChatMessage)
-async def send_message_http(
-    chat_id: str,
-    data: CreateMessageRequest,
-    current_user = Depends(get_current_user)
-):
-    """Отправить сообщение в чат (через HTTP)"""
-    message = ChatHTTPService.send_message(
-        UUID(chat_id),
-        UUID(current_user["id"]),
-        data.content
-    )
-    if not message:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Chat not found"
-        )
-    return message

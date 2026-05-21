@@ -157,3 +157,32 @@ class ChatHTTPService:
             'created_at': chat.get('created_at'),
             'updated_at': chat.get('updated_at') or chat.get('created_at')
         }
+
+    @staticmethod
+    def send_message(chat_id: UUID, user_id: UUID, content: str) -> Optional[Dict[str, Any]]:
+        """Отправить сообщение через HTTP"""
+        # Проверяем доступ к чату
+        chat = ChatRepository.get_chat_by_id(chat_id, user_id)
+        if not chat:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Chat not found"
+            )
+
+        # Создаем сообщение
+        message = ChatRepository.create_message(chat_id, user_id, content)
+
+        # Обновляем время чата
+        supabase = get_supabase_admin()
+        supabase.table("chat_rooms").update({
+            'updated_at': datetime.now(timezone.utc).isoformat()
+        }).eq('id', str(chat_id)).execute()
+
+        return {
+            'id': message['id'],
+            'chat_id': message['room_id'],
+            'sender_id': message['sender_id'],
+            'content': message['content'],
+            'created_at': message['created_at'],
+            'updated_at': message.get('updated_at', message['created_at'])
+        }

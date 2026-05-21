@@ -185,18 +185,9 @@ async def message_send(sid, data):
         room_name = f"chat_{chat_id}"
         print(f"📨 Broadcasting to room {room_name}")
 
-        # ПРЯМАЯ ОТПРАВКА - пробуем оба способа
-        # Способ 1: Всем в комнате
         await sio.emit('chat:message', message_data, room=room_name)
         print(f"Sent to room {room_name}")
 
-        # Способ 2: Напрямую отправителю (для теста)
-        await sio.emit('chat:message', message_data, to=sid)
-        print(f"Sent directly to {sid}")
-
-        # Способ 3: Всем подключенным (для теста)
-        await sio.emit('chat:message', message_data)
-        print(f"Sent to all connected")
 
     except Exception as e:
         print(f"Error: {e}")

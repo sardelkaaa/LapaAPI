@@ -18,14 +18,9 @@ app = FastAPI(title=settings.APP_NAME,
               description="API для волонтерского проекта",
               debug=settings.DEBUG)
 
-origins = [
-    "http://localhost:3000",
-    "https://lapa-api-delderol.amvera.io",
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

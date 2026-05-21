@@ -137,9 +137,12 @@ async def chat_leave(sid, data):
 
         print(f"User {user_id} left room {room_name}")
 
+
 @sio.event
 async def message_send(sid, data):
     """Отправка сообщения"""
+    print(f"message_send CALLED with data: {data}")
+
     user_id = None
     for uid, s in active_users.items():
         if s == sid:
@@ -147,6 +150,7 @@ async def message_send(sid, data):
             break
 
     if not user_id:
+        print(f"User not found for sid {sid}")
         await sio.emit('error', {'message': 'Not authenticated'}, to=sid)
         return
 
@@ -154,39 +158,50 @@ async def message_send(sid, data):
     content = data.get('content')
 
     if not chat_id or not content:
+        print(f"Invalid data: chat_id={chat_id}, content={content}")
         return
 
     try:
+        # Проверяем чат
         chat = ChatRepository.get_chat_by_id(UUID(chat_id), UUID(user_id))
         if not chat:
+            print(f"Chat {chat_id} not found")
             await sio.emit('error', {'message': 'Chat not found'}, to=sid)
             return
 
         # Создаем сообщение
         message = ChatRepository.create_message(UUID(chat_id), UUID(user_id), content)
-
-        # Получаем данные отправителя
-        sender_data = UsersRepository.get_user_by_id(user_id)
+        print(f"Message created: {message['id']}")
 
         message_data = {
             'id': str(message['id']),
             'chat_id': str(message['room_id']),
             'sender_id': str(message['sender_id']),
-            'sender_name': sender_data.get('name') if sender_data else None,
             'content': message['content'],
             'created_at': message['created_at'],
             'updated_at': message.get('updated_at', message['created_at'])
         }
 
         room_name = f"chat_{chat_id}"
-        print(f"📨 Broadcasting to {room_name}: {message_data}")
+        print(f"📨 Broadcasting to room {room_name}")
 
-        # Отправляем всем в комнате
-        await sio.emit(f'chat:{chat_id}:message', message_data, room=room_name)
+        # ПРЯМАЯ ОТПРАВКА - пробуем оба способа
+        # Способ 1: Всем в комнате
+        await sio.emit('chat:message', message_data, room=room_name)
+        print(f"Sent to room {room_name}")
+
+        # Способ 2: Напрямую отправителю (для теста)
+        await sio.emit('chat:message', message_data, to=sid)
+        print(f"Sent directly to {sid}")
+
+        # Способ 3: Всем подключенным (для теста)
+        await sio.emit('chat:message', message_data)
+        print(f"Sent to all connected")
 
     except Exception as e:
-        print(f"Error sending message: {e}")
-        await sio.emit('error', {'message': str(e)}, to=sid)
+        print(f"Error: {e}")
+        import traceback
+        traceback.print_exc()
 
 # Создаем ASGI приложение
 socket_app = socketio.ASGIApp(sio)

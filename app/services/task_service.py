@@ -316,3 +316,31 @@ class TaskService:
             user["id"],
             comment=f"Task deleted by {user['role']}"
         )
+
+    @staticmethod
+    def get_creator_completed_tasks(
+            creator_id: str,
+            limit: int,
+            offset: int
+    ) -> Dict[str, Any]:
+        """
+        Получить выполненные задачи, созданные указанным пользователем.
+        """
+        filters = {
+            "status": "completed",
+            "creator_id": creator_id
+        }
+
+        tasks = TasksRepository.list_tasks_with_filters(filters, limit, offset)
+        total = len(tasks)
+
+        items = []
+        for task in tasks:
+            enriched = TaskService._enrich_task(task["id"])
+            items.append(enriched)
+
+        return {
+            "items": items,
+            "total": total,
+            "next_offset": offset + limit if offset + limit < total else None
+        }

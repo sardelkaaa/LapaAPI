@@ -85,3 +85,18 @@ def delete_task(
     """
     TaskService.delete_task(current_user, task_id)
     return None
+
+
+@router.get("/creator/{creator_id}/completed", response_model=TaskListResponse)
+def get_creator_completed_tasks(
+        creator_id: str,
+        limit: int = Query(20, ge=1, le=100),
+        offset: int = Query(0, ge=0),
+        current_user=Depends(get_current_user)
+):
+    """
+    Получить выполненные задачи, созданные указанным пользователем.
+
+    Доступно для любого авторизованного пользователя.
+    """
+    return TaskService.get_creator_completed_tasks(creator_id, limit, offset)

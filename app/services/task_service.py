@@ -167,8 +167,8 @@ class TaskService:
     @staticmethod
     def complete_task(user: Dict[str, Any], task_id: str) -> Dict[str, Any]:
         task = TasksRepository.get_task_by_id(task_id)
-        if not task or task["assignee_id"] != user["id"]:
-            raise HTTPException(403, "Only assignee can complete")
+        if not task or task["creator_id"] != user["id"]:
+            raise HTTPException(403, "Only creator can complete")
         if task["status"] not in ["assigned", "in_progress"]:
             raise HTTPException(400, "Task cannot be completed")
         update_data = {

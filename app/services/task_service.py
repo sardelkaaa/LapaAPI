@@ -1,5 +1,7 @@
 from typing import Dict, Any
 from fastapi import HTTPException
+
+from app.core.database import get_supabase_admin
 from app.db.repositories.tasks import TasksRepository
 from app.db.repositories.animals import AnimalsRepository
 from app.db.repositories.volunteer_competencies import VolunteerCompetenciesRepository
@@ -226,3 +228,49 @@ class TaskService:
         total = len(scored)
         items = [TaskService._enrich_task(t["id"]) for _, t in scored[offset:offset+limit]]
         return {"items": items, "total": total, "next_offset": offset+limit if offset+limit < total else None}
+
+    @staticmethod
+    def get_completed_tasks_for_review(
+            user: Dict[str, Any],
+            volunteer_id: str,
+            limit: int,
+            offset: int
+    ) -> Dict[str, Any]:
+        """
+        Получить выполненные задачи волонтёра, созданные текущим пользователем.
+        """
+        if user.get("role") not in ["curator", "organization", "admin"]:
+            raise HTTPException(
+                status_code=403,
+                detail="Only curators, organizations and admins can review volunteers"
+            )
+
+        filters = {
+            "status": "completed",
+            "assignee_id": volunteer_id,
+            "creator_id": user["id"]
+        }
+
+        tasks = TasksRepository.list_tasks_with_filters(filters, limit, offset)
+        total = len(tasks)
+
+        items = []
+        for task in tasks:
+            supabase = get_supabase_admin()
+            review_check = supabase.table("volunteer_reviews") \
+                .select("id") \
+                .eq("task_id", task["id"]) \
+                .limit(1) \
+                .execute()
+
+            has_review = len(review_check.data or []) > 0
+
+            enriched = TaskService._enrich_task(task["id"])
+            enriched["has_review"] = has_review
+            items.append(enriched)
+
+        return {
+            "items": items,
+            "total": total,
+            "next_offset": offset + limit if offset + limit < total else None
+        }

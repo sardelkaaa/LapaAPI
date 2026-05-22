@@ -55,3 +55,21 @@ def cancel_task(task_id: str, current_user=Depends(get_current_user)):
 def complete_task(task_id: str, current_user=Depends(require_roles("volunteer"))):
     """Завершить задание и возвращение статуса \"в ожидании\"."""
     return TaskService.complete_task(current_user, task_id)
+
+
+@router.get("/volunteer/{volunteer_id}/completed", response_model=TaskListResponse)
+def get_completed_tasks_for_review(
+        volunteer_id: str,
+        limit: int = Query(20, ge=1, le=100),
+        offset: int = Query(0, ge=0),
+        current_user=Depends(require_roles("curator", "organization", "admin"))
+):
+    """
+    Получить выполненные задачи волонтёра, созданные текущим пользователем.
+    """
+    return TaskService.get_completed_tasks_for_review(
+        current_user,
+        volunteer_id,
+        limit,
+        offset
+    )

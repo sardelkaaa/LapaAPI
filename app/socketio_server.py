@@ -113,7 +113,7 @@ async def chat_join(sid, data):
             return
 
         room_name = f"chat_{chat_id}"
-        sio.enter_room(sid, room_name)
+        await sio.enter_room(sid, room_name)
         print(f"✅ User {user_id} joined room {room_name}")
 
         # Отправляем историю
@@ -191,7 +191,7 @@ async def message_send(sid, data):
         }
 
         room_name = f"chat_{chat_id}"
-        sio.enter_room(sid, room_name)  # гарантируем что отправитель в комнате
+        await sio.enter_room(sid, room_name)  # гарантируем что отправитель в комнате
         print(f"📨 Broadcasting to room {room_name}")
 
         await sio.emit('chat:message', message_data, room=room_name)

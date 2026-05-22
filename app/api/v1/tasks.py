@@ -52,8 +52,8 @@ def cancel_task(task_id: str, current_user=Depends(get_current_user)):
     return TaskService.cancel_task(current_user, task_id)
 
 @router.post("/{task_id}/complete", response_model=TaskOut)
-def complete_task(task_id: str, current_user=Depends(require_roles("volunteer"))):
-    """Завершить задание и возвращение статуса \"в ожидании\"."""
+def complete_task(task_id: str, current_user=Depends(require_roles("organization", "curator"))):
+    """Завершить задание и возвращение статуса \"завершено\"."""
     return TaskService.complete_task(current_user, task_id)
 
 
@@ -62,7 +62,7 @@ def get_completed_tasks_for_review(
         volunteer_id: str,
         limit: int = Query(20, ge=1, le=100),
         offset: int = Query(0, ge=0),
-        current_user=Depends(require_roles("curator", "organization", "admin"))
+        current_user=Depends(require_roles("curator", "organization"))
 ):
     """
     Получить выполненные задачи волонтёра, созданные текущим пользователем.
@@ -73,3 +73,15 @@ def get_completed_tasks_for_review(
         limit,
         offset
     )
+
+
+@router.delete("/{task_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_task(
+        task_id: str,
+        current_user=Depends(require_roles("curator", "organization"))
+):
+    """
+    Удалить задание (полное удаление из БД).
+    """
+    TaskService.delete_task(current_user, task_id)
+    return None

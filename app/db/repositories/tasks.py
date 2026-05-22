@@ -98,3 +98,10 @@ class TasksRepository:
         supabase = get_supabase_admin()
         result = supabase.table("task_status_history").select("*").eq("task_id", task_id).order("changed_at").execute()
         return result.data or []
+
+    @staticmethod
+    def delete_task(task_id: str) -> bool:
+        """Полное удаление задачи из БД"""
+        supabase = get_supabase_admin()
+        result = supabase.table("tasks").delete().eq("id", task_id).execute()
+        return len(result.data or []) > 0

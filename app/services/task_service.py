@@ -274,3 +274,45 @@ class TaskService:
             "total": total,
             "next_offset": offset + limit if offset + limit < total else None
         }
+
+    @staticmethod
+    def delete_task(user: Dict[str, Any], task_id: str) -> None:
+        """
+        Удалить задание (жёсткое удаление).
+
+        Только создатель или администратор могут удалить.
+        Задание нельзя удалить, если оно в статусе "completed" (опционально).
+        """
+        # Получаем задание
+        task = TasksRepository.get_task_by_id(task_id)
+        if not task:
+            raise HTTPException(status_code=404, detail="Task not found")
+
+        if user["role"] not in ["admin"] and task["creator_id"] != user["id"]:
+            raise HTTPException(
+                status_code=403,
+                detail="Only the creator or admin can delete this task"
+            )
+
+        if task["status"] == "completed":
+            raise HTTPException(
+                status_code=400,
+                detail="Cannot delete a completed task"
+            )
+
+        TasksRepository.update_required_skills(task_id, [])
+
+        supabase = get_supabase_admin()
+        supabase.table("task_status_history").delete().eq("task_id", task_id).execute()
+
+        deleted = TasksRepository.delete_task(task_id)
+        if not deleted:
+            raise HTTPException(status_code=400, detail="Failed to delete task")
+
+        TasksRepository.add_status_history(
+            task_id,
+            task["status"],
+            "deleted",
+            user["id"],
+            comment=f"Task deleted by {user['role']}"
+        )

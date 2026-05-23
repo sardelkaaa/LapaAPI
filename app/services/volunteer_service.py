@@ -120,7 +120,7 @@ class VolunteerService:
 
         items = []
         for task in tasks:
-            enriched = TaskService._enrich_task(task["id"])
+            enriched = TaskService.enrich_task(task["id"])
             items.append(enriched)
 
         return {

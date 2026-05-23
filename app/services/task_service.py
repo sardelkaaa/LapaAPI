@@ -29,7 +29,7 @@ class TaskService:
             raise HTTPException(403, "Only volunteer can take tasks")
 
     @staticmethod
-    def _enrich_task(task_id: str) -> Dict[str, Any]:
+    def enrich_task(task_id: str) -> Dict[str, Any]:
         detailed = TasksRepository.get_task_with_details(task_id)
         if not detailed:
             raise HTTPException(404, "Task not found")
@@ -91,11 +91,11 @@ class TaskService:
         if skill_ids:
             TasksRepository.add_required_skills(task["id"], skill_ids)
         TasksRepository.add_status_history(task["id"], None, "in_pending", user["id"])
-        return TaskService._enrich_task(task["id"])
+        return TaskService.enrich_task(task["id"])
 
     @staticmethod
     def get_task(task_id: str) -> Dict[str, Any]:
-        return TaskService._enrich_task(task_id)
+        return TaskService.enrich_task(task_id)
 
     @staticmethod
     def update_task(user: Dict[str, Any], task_id: str, payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -125,7 +125,7 @@ class TaskService:
             TasksRepository.update_task(task_id, update_data)
         if "skill_ids" in payload:
             TasksRepository.update_required_skills(task_id, payload["skill_ids"])
-        return TaskService._enrich_task(task_id)
+        return TaskService.enrich_task(task_id)
 
     @staticmethod
     def take_task(user: Dict[str, Any], task_id: str) -> Dict[str, Any]:
@@ -141,7 +141,7 @@ class TaskService:
         }
         TasksRepository.update_task(task_id, update_data)
         TasksRepository.add_status_history(task_id, task["status"], "assigned", user["id"])
-        return TaskService._enrich_task(task_id)
+        return TaskService.enrich_task(task_id)
 
     @staticmethod
     def cancel_task(user: Dict[str, Any], task_id: str) -> Dict[str, Any]:
@@ -162,7 +162,7 @@ class TaskService:
         }
         TasksRepository.update_task(task_id, update_data)
         TasksRepository.add_status_history(task_id, task["status"], "in_pending", user["id"])
-        return TaskService._enrich_task(task_id)
+        return TaskService.enrich_task(task_id)
 
     @staticmethod
     def complete_task(user: Dict[str, Any], task_id: str) -> Dict[str, Any]:
@@ -178,7 +178,7 @@ class TaskService:
         }
         TasksRepository.update_task(task_id, update_data)
         TasksRepository.add_status_history(task_id, task["status"], "completed", user["id"])
-        return TaskService._enrich_task(task_id)
+        return TaskService.enrich_task(task_id)
 
     @staticmethod
     def list_tasks(user: Dict[str, Any], limit: int, offset: int) -> Dict[str, Any]:
@@ -187,11 +187,11 @@ class TaskService:
             all_tasks = TasksRepository.list_tasks_with_filters({}, limit=1000, offset=0)
             filtered = [t for t in all_tasks if t["status"] == "in_pending" or t.get("assignee_id") == user["id"]]
             total = len(filtered)
-            items = [TaskService._enrich_task(t["id"]) for t in filtered[offset:offset+limit]]
+            items = [TaskService.enrich_task(t["id"]) for t in filtered[offset:offset + limit]]
             return {"items": items, "total": total, "next_offset": offset+limit if offset+limit < total else None}
         else:
             tasks = TasksRepository.list_tasks_with_filters({"creator_id": user["id"]}, limit, offset)
-            items = [TaskService._enrich_task(t["id"]) for t in tasks]
+            items = [TaskService.enrich_task(t["id"]) for t in tasks]
             total = len(tasks)  # не точное, но для demo
             return {"items": items, "total": total, "next_offset": offset+limit if offset+limit < total else None}
 
@@ -226,7 +226,7 @@ class TaskService:
             scored.append((score, task))
         scored.sort(key=lambda x: x[0], reverse=True)
         total = len(scored)
-        items = [TaskService._enrich_task(t["id"]) for _, t in scored[offset:offset+limit]]
+        items = [TaskService.enrich_task(t["id"]) for _, t in scored[offset:offset + limit]]
         return {"items": items, "total": total, "next_offset": offset+limit if offset+limit < total else None}
 
     @staticmethod
@@ -265,7 +265,7 @@ class TaskService:
 
             has_review = len(review_check.data or []) > 0
 
-            enriched = TaskService._enrich_task(task["id"])
+            enriched = TaskService.enrich_task(task["id"])
             enriched["has_review"] = has_review
             items.append(enriched)
 
@@ -336,7 +336,7 @@ class TaskService:
 
         items = []
         for task in tasks:
-            enriched = TaskService._enrich_task(task["id"])
+            enriched = TaskService.enrich_task(task["id"])
             items.append(enriched)
 
         return {

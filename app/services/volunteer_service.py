@@ -1,9 +1,11 @@
-from typing import List
+from typing import List, Dict
 
 from fastapi import HTTPException
 
+from app.db.repositories.tasks import TasksRepository
 from app.db.repositories.users import UsersRepository
 from app.db.repositories.volunteer_competencies import VolunteerCompetenciesRepository
+from app.services.task_service import TaskService
 
 
 class VolunteerService:
@@ -102,3 +104,27 @@ class VolunteerService:
 
         new_schedule = VolunteerCompetenciesRepository.set_schedule(user_id, schedule)
         return {"schedule": new_schedule, "message": "Schedule updated"}
+
+    @staticmethod
+    def get_my_completed_tasks(user_id: str, limit: int, offset: int) -> Dict[str, Any]:
+        """
+        Получить выполненные задания текущего волонтёра.
+        """
+        filters = {
+            "status": "completed",
+            "assignee_id": user_id
+        }
+
+        tasks = TasksRepository.list_tasks_with_filters(filters, limit, offset)
+        total = len(tasks)
+
+        items = []
+        for task in tasks:
+            enriched = TaskService._enrich_task(task["id"])
+            items.append(enriched)
+
+        return {
+            "items": items,
+            "total": total,
+            "next_offset": offset + limit if offset + limit < total else None
+        }

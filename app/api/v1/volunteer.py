@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Depends, Body, Query
 from app.api.v1.deps import require_roles
 from app.services.volunteer_service import VolunteerService
 from app.models.competencies import (
@@ -83,3 +83,20 @@ def get_user_competencies(
 ):
     """Получить компетенции любого волонтёра"""
     return VolunteerService.get_volunteer_competencies(user_id)
+
+
+from app.models.task import TaskListResponse
+
+
+@router.get("/me/completed", response_model=TaskListResponse)
+def get_my_completed_tasks(
+        limit: int = Query(20, ge=1, le=100),
+        offset: int = Query(0, ge=0),
+        current_user=Depends(require_roles("volunteer"))
+):
+    """
+    Получить выполненные задания текущего волонтёра.
+
+    Возвращает задачи со статусом "completed", где assignee_id = текущий волонтёр.
+    """
+    return VolunteerService.get_my_completed_tasks(current_user["id"], limit, offset)

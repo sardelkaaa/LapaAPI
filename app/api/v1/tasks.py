@@ -102,7 +102,7 @@ def get_creator_completed_tasks(
     """
     return TaskService.get_creator_completed_tasks(creator_id, limit, offset)
 
-@router.get("/tasks/volunteer/me/completed", response_model=TaskListResponse)
+@router.get("/volunteer/me/completed", response_model=TaskListResponse)
 def get_volunteer_completed_tasks(
         limit: int = Query(20, ge=1, le=100),
         offset: int = Query(0, ge=0),

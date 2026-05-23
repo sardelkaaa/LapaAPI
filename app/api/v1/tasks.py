@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Query, status
 from app.api.v1.deps import get_current_user, require_roles
 from app.services.task_service import TaskService
 from app.models.task import TaskCreate, TaskOut, TaskUpdate, TaskListResponse
+from app.services.volunteer_service import VolunteerService
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 
@@ -100,3 +101,16 @@ def get_creator_completed_tasks(
     Доступно для любого авторизованного пользователя.
     """
     return TaskService.get_creator_completed_tasks(creator_id, limit, offset)
+
+@router.get("/tasks/volunteer/me/completed", response_model=TaskListResponse)
+def get_volunteer_completed_tasks(
+        limit: int = Query(20, ge=1, le=100),
+        offset: int = Query(0, ge=0),
+        current_user=Depends(require_roles("volunteer"))
+):
+    """
+    Получить выполненные задания текущего волонтёра.
+
+    Возвращает задачи со статусом "completed", где assignee_id = текущий волонтёр.
+    """
+    return VolunteerService.get_my_completed_tasks(current_user["id"], limit, offset)

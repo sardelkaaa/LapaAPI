@@ -17,7 +17,7 @@ ALLOWED_ORIGINS = [
     "http://127.0.0.1:8080",
     "https://lapa-frontend.amvera.io",
     "https://lapa-api-delderol.amvera.io",
-    "https://lapafrontend.onrender.com/"
+    "https://lapafrontend.onrender.com"
 ]
 
 sio = socketio.AsyncServer(
@@ -28,7 +28,7 @@ sio = socketio.AsyncServer(
     ping_timeout=60,
     ping_interval=25,
     allow_upgrades=True,
-    transports=['websocket', 'polling']
+    transports=['polling','websocket']
 )
 
 # Хранилище активных пользователей

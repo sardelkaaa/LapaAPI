@@ -6,23 +6,8 @@ from app.core.config import settings
 from app.db.repositories.chat import ChatRepository
 from app.db.repositories.users import UsersRepository
 
-
-ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://localhost:5173",
-    "http://localhost:8000",
-    "http://localhost:8080",
-    "http://127.0.0.1:3000",
-    "http://127.0.0.1:5173",
-    "http://127.0.0.1:8000",
-    "http://127.0.0.1:8080",
-    "https://lapa-frontend.amvera.io",
-    "https://lapa-api-delderol.amvera.io",
-    "https://lapafrontend.onrender.com"
-]
-
 sio = socketio.AsyncServer(
-    cors_allowed_origins=ALLOWED_ORIGINS,
+    cors_allowed_origins=[],
     async_mode='asgi',
     logger=True,
     engineio_logger=True,

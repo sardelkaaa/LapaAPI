@@ -7,7 +7,7 @@ from app.db.repositories.chat import ChatRepository
 from app.db.repositories.users import UsersRepository
 
 sio = socketio.AsyncServer(
-    cors_allowed_origins=None,
+    cors_allowed_origins=['*'],
     async_mode='asgi',
     logger=True,
     engineio_logger=True,
